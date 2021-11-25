@@ -1,5 +1,6 @@
 package model;
 
+import visitor.Visitor;
 
 /*
  * une abstraction pour les décorateurs
@@ -24,5 +25,6 @@ public abstract class Decorator extends DocumentElement{
 
     @Override
     public boolean isSingleTag() { return glyph.isSingleTag(); }
- 
+    @Override
+    public void accept(Visitor visitor) { glyph.accept(visitor); }
 }

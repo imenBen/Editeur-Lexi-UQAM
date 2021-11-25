@@ -3,6 +3,8 @@ package controller;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import formatting.FullFormatting;
+import formatting.PlaintextFormatting;
 import model.CompositeElement;
 //import formatting.FullFormatting;
 //import formatting.PlaintextFormatting;
@@ -15,6 +17,7 @@ import utils.ForegroundColorAction;
 import utils.InsertImageAction;
 import utils.LEXIFILEtoGDocumentElementParser;
 //import visitor.GlyphToOOSEFILEVisitor;
+import visitor.DocumentElementToLexiFILEVisitor;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -142,8 +145,8 @@ public class MainWindowHandler implements ActionListener {
                         mainWindow.setEditorContent(root);
                         // Définir la mise en page
                         Map<String, Object> document = new Gson().fromJson(opening_oosefile, new TypeToken<Map<String, Object>>(){}.getType());
-                        // if(document.get("format").equals("Full")) mainWindow.setFormatting(new FullFormatting());
-                        //  else  mainWindow.setFormatting(new PlaintextFormatting());
+                        if(document.get("format").equals("Full")) mainWindow.setFormatting(new FullFormatting());
+                        else  mainWindow.setFormatting(new PlaintextFormatting());
                     } catch (Exception evt) {
                         System.out.println(evt.getMessage());
                         mainWindow.showDialog(evt.getMessage(), "Erreur");
@@ -160,7 +163,7 @@ public class MainWindowHandler implements ActionListener {
                 // Créer un sélecteur de fichier
                 JFileChooser jFileChooser = new JFileChooser("f:");
                 jFileChooser.setFileFilter(new FileNameExtensionFilter("Lexi Document File", new String[] {"LEXI"}));
-                setFileChooserText("儲存檔案", "儲存");
+                setFileChooserText("Enregistrer le fichier", "Enregistrer");
                 SwingUtilities.updateComponentTreeUI(jFileChooser);
                 // Si l'utilisateur sélectionne le fichier
                 if (jFileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
@@ -172,11 +175,11 @@ public class MainWindowHandler implements ActionListener {
                         OutputStreamWriter fileWriter = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8);    //FileWriter fileWriter = new FileWriter(file, false);
                         BufferedWriter writer = new BufferedWriter(fileWriter);
                         // Écrire des données
-                        //    GlyphToOOSEFILEVisitor glyphToOOSEFILEVisitor = new GlyphToOOSEFILEVisitor();
-                        //  root.accept(glyphToOOSEFILEVisitor);  
-                        //  String saving_oosefile = "{\"format\": \"" + mainWindow.getFormatting().getTYPE() + "\"," +
-                        //                           "\"content\": " + glyphToOOSEFILEVisitor.getParseString() + "}";
-                        //  writer.write(saving_oosefile);
+                          DocumentElementToLexiFILEVisitor documentElementToLexiFILEVisitor = new DocumentElementToLexiFILEVisitor();
+                          root.accept(documentElementToLexiFILEVisitor);  
+                          String saving_oosefile = "{\"format\": \"" + mainWindow.getFormatting().getTYPE() + "\"," +
+                                                   "\"content\": " + documentElementToLexiFILEVisitor.getParseString() + "}";
+                          writer.write(saving_oosefile);
                         writer.flush();
                         writer.close();
                     } catch (Exception evt) {
@@ -184,7 +187,7 @@ public class MainWindowHandler implements ActionListener {
                         mainWindow.showDialog(evt.getMessage(), "Erreur");
                     }
                 }
-                // If the user cancelled the operation
+                // Si l'utilisateur annule l'opération
                 else
                     mainWindow.showDialog("Annuler l'opération de sauvegarde du fichier", "OK");
                 break;
@@ -193,11 +196,11 @@ public class MainWindowHandler implements ActionListener {
             //----------------------------------------Format----------------------------------------
             //Le bouton enfoncé est "full"
             case "full":
-            //    mainWindow.setFormatting(new FullFormatting());
+                mainWindow.setFormatting(new FullFormatting());
                 break;
             //Le bouton enfoncé est "plaintext"
             case "plaintext":
-              //  mainWindow.setFormatting(new PlaintextFormatting());
+                mainWindow.setFormatting(new PlaintextFormatting());
                 break;
 
             //---------------------------------------aide----------------------------------------

@@ -23,14 +23,17 @@ public class HTMLtoDocumentElementParser implements Parser<DocumentElement> {
     }
 
     public DocumentElement getParse(Element elem){
+    	DocumentElement documentElement;
         //si c'est null retourner null
         if(elem == null) return null;
 
        // Obtenir document element Factory et générer document elemennt
         DocumentElememtFactory myDecouementElementFactory = new DocumentElememtFactory();
         DocumentElement documentElementSpanElement = isDecorator(elem.tagName())? getDecorateeGlyphs(elem): null;
-        DocumentElement documentElement = myDecouementElementFactory.getDocumentElementInstance(elem.tagName(), documentElementSpanElement);
-
+        if (documentElementSpanElement !=null )
+        	 documentElement = myDecouementElementFactory.getDocumentElementInstance(elem.tagName(), documentElementSpanElement);
+        documentElement = myDecouementElementFactory.getDocumentElementInstance(elem.tagName());
+        
        // Définir les propriétés du glyphe du document element
         try {
             documentElement.setAttribute(elem.attributes().toString().replace("\"", "\\\"").replaceAll(" style=\\\\?[\\\"'].*\\\\?['\\\"]", ""));
@@ -40,13 +43,13 @@ public class HTMLtoDocumentElementParser implements Parser<DocumentElement> {
 
         //Insérer un élément enfant
         if(!(documentElement instanceof Character || documentElement instanceof Decorator)) {
+        	System.out.println("parsing chidren");
             ArrayList<DocumentElement> childGlyphs = getChildListParse(elem.childNodes());
             for (DocumentElement glyph : childGlyphs) {
-                try { if (documentElement.getChildSize() > 1 ) ((CompositeElement) documentElement).insert(glyph); }
+                try {  ((CompositeElement) documentElement).insert(glyph); }
                 catch (Exception ex) {}
             }
         }
-        System.out.println(documentElement.toString());
         //retourner un document element
         return documentElement;
     }

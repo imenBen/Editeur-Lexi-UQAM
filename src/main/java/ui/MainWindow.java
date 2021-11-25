@@ -1,12 +1,22 @@
 package ui;
 
+
+import controller.Command;
 import controller.EditorViewerHandler;
+import controller.EnregistrerCommand;
 import controller.MainWindowHandler;
+import controller.NouveauCommand;
+import controller.OuvrirCommand;
+import formatting.Formatting;
+import formatting.FullFormatting;
 //import formatting.FullFormatting;
 //import formatting.Formatting;
 import main.Application;
 import model.DocumentElement;
+import model.Root;
 import utils.HTMLtoDocumentElementParser;
+import visitor.CountCharacterVisitor;
+import visitor.DrawDocumentElementVisitor;
 //import visitor.CountCharacterVisitor;
 //import visitor.DrawGlyphVisitor;
 import widgets.Menu;
@@ -40,10 +50,10 @@ public class MainWindow extends Window {
     private final JLabel statusLabel = new JLabel();
 
     // formattage
-   // private Formatting formatting = new FullFormatting();
+    private Formatting formatting = new FullFormatting();
 
     // la racine du texte
-    private DocumentElement root = null;
+    private DocumentElement root = new Root();
 
     // Déclaration des objets de la barre de menu
     private Menu fileMenu;
@@ -135,16 +145,17 @@ public class MainWindow extends Window {
                 // enregistrer la position du curseur
                 int caretPosition = editorViewer.getCaretPosition();
                 // instancier les Visiteur
-             //   DrawGlyphVisitor drawGlyphVisitor = new DrawGlyphVisitor(formatting);
-             //   CountCharacterVisitor countCharacterVisitor = new CountCharacterVisitor();
+                DrawDocumentElementVisitor drawGlyphVisitor = new DrawDocumentElementVisitor(formatting);
+                CountCharacterVisitor countCharacterVisitor = new CountCharacterVisitor();
                 System.out.println("rag name "+root.getTagname());
-         //       root.accept(drawGlyphVisitor);      //traiter le texte
-        //        root.accept(countCharacterVisitor); //Utilisez countCharacterVisitor pour calculer le nombre de mots
+                root.accept(drawGlyphVisitor);      //traiter le texte
+                root.accept(countCharacterVisitor); //Utilisez countCharacterVisitor pour calculer le nombre de mots
+                System.out.println(root.getChildSize());
                 // ecrire sur  editorViewer
-         //       editorViewer.setText("<html><head></head>" + drawGlyphVisitor.getParseString() + "</html>");
+                editorViewer.setText("<html><head></head>" + drawGlyphVisitor.getParseString() + "</html>");
                 editorViewer.setCaretPosition(Math.min(caretPosition, editorViewer.getDocument().getLength()-1));
                 // Afficher l'état actuel
-          //      statusLabel.setText( countCharacterVisitor.getParagraph() + " Paragraphes　" + countCharacterVisitor.getCharacter() + " Caractères　|　Type de formattage：" + formatting.getTYPE() + "　　");
+                statusLabel.setText( countCharacterVisitor.getParagraph() + " Paragraphes　" + countCharacterVisitor.getCharacter() + " Caractères　|　Type de formattage：" + formatting.getTYPE() + "　　");
                 // activer le listener
                 editorViewerHandler.setActive(true);
             };
@@ -163,7 +174,7 @@ public class MainWindow extends Window {
         drawIntoEditorViewer();
     }
     // Définir le type du formattage
- /*   public void setFormatting(Formatting formatting){
+    public void setFormatting(Formatting formatting){
         // définir le formattage 
         this.formatting = formatting;
         drawIntoEditorViewer();
@@ -172,11 +183,12 @@ public class MainWindow extends Window {
         insertImgEditMenu.setEnabled(enabled);
         fontStyleMenu.setEnabled(enabled);
         colorMenu.setEnabled(enabled);
-    }*/
+    }
     // get le formattage
- //   public Formatting getFormatting(){ return this.formatting; }
+    public Formatting getFormatting(){ return this.formatting; }
     // obtenir tout la racine du document 
     public DocumentElement getRoot() { return this.root; }
+    public void setRoot() {  this.root= new HTMLtoDocumentElementParser().parse(editorViewer.getText()); }
     // afficher Dialog Window
     public void showDialog(String message, String title) {
         dialogWindow.showDialog(message, title);
@@ -223,19 +235,28 @@ public class MainWindow extends Window {
         newFileMenu =  widgetFactory.createMenuItem();
         newFileMenu.setDescription("Nouveau ");
         newFileMenu.setActionCommand("new");
+        
+        Command nouveau = new NouveauCommand(this);
+
+        newFileMenu.addActionListener(e -> nouveau.execute());
         // --------------------
         openFileMenu = widgetFactory.createMenuItem();
         openFileMenu.setDescription("Ouvrir ");
         openFileMenu.setActionCommand("open");
-        // --------------------
+        Command ouvrir = new OuvrirCommand(this, getRoot() );
+
+        openFileMenu.addActionListener(e -> ouvrir.execute());
+        // -------------------- d
         saveFileMenu = widgetFactory.createMenuItem();
         saveFileMenu.setDescription("Enregistrer");
         saveFileMenu.setActionCommand("save");
+        Command enregistrer = new EnregistrerCommand(this,  getRoot());
 
+        saveFileMenu.addActionListener(e -> enregistrer.execute());
         // Des listeners pour les options
-        newFileMenu.addActionListener(mainWindowHandler);
-        openFileMenu.addActionListener(mainWindowHandler);
-        saveFileMenu.addActionListener(mainWindowHandler);
+        //newFileMenu.addActionListener(mainWindowHandler);
+        //openFileMenu.addActionListener(mainWindowHandler);
+        //saveFileMenu.addActionListener(mainWindowHandler);
 
         // Item ajoutés au menu 
         fileMenu.addMenuItem(newFileMenu);

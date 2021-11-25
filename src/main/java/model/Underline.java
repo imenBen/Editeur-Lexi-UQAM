@@ -3,6 +3,8 @@ package model;
  * décorateur pour le font italique
  */
 
+import visitor.Visitor;
+
 public class Underline extends Decorator{
     
     
@@ -21,5 +23,9 @@ public class Underline extends Decorator{
 
     @Override
     public boolean isSingleTag() { return false; }
-   
+    @Override
+    public void accept(Visitor visitor) {
+        super.accept(visitor);
+        visitor.visit(this);
+    }
 }

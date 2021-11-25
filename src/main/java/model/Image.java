@@ -1,5 +1,6 @@
 package model;
 
+import visitor.Visitor;
 
 /*
  * une abstraction pour les éléments de type image
@@ -20,5 +21,8 @@ public class Image extends DocumentElement{
    
     @Override
     public boolean isSingleTag() { return true; }
+    
+    @Override
+    public void accept(Visitor visitor) { visitor.visit(this); }
    
 }

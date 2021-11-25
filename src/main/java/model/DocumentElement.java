@@ -1,5 +1,7 @@
 package model;
 
+import visitor.Visitor;
+
 /*
  * une abstraction pour les éléments d'un document. 
  */
@@ -37,5 +39,8 @@ public abstract class DocumentElement{
 	public abstract boolean isSingleTag(); 
     
     public abstract int getChildSize() ;
+    
+   
+    public void accept(Visitor visitor) { visitor.visit(this); }
   
 }
